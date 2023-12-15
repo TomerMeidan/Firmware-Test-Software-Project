@@ -20,7 +20,7 @@ public class CapturePacket implements Serializable {
 	private byte opcodeHigh;
 	private byte opcodeLow;
 
-	private byte[] dataArray;
+	private byte[] dataArray = null;
 	private byte checksum;
 
 	public CapturePacket() {
@@ -36,7 +36,7 @@ public class CapturePacket implements Serializable {
 		baos.write(opcodeHigh);
 		baos.write(opcodeLow);
 
-		if (length != 0x04) {
+		if (dataArray != null) {
 			for (byte data : dataArray)
 				baos.write(data);
 		}
@@ -56,7 +56,7 @@ public class CapturePacket implements Serializable {
 		sum += (byte) (opcodeHigh & 0xFF);
 		sum += (byte) (opcodeLow & 0xFF);
 		
-		if (length != 0x04) 
+		if (dataArray != null) 
 		for (byte data : dataArray) {
 			sum += (data & 0xFF);
 		}
@@ -93,7 +93,7 @@ public class CapturePacket implements Serializable {
 		packet.opcode = (short) ((packet.opcodeHigh << 8) | packet.opcodeLow);
 
 		// Extract data bytes to array
-		if (packet.length != 0x04) {
+		if (packet.dataArray != null) {
 			packet.dataArray = new byte[packet.length - 4];
 			System.arraycopy(packetBytes, pos, packet.dataArray, 0, packet.dataArray.length);
 			pos += packet.dataArray.length;
@@ -103,6 +103,24 @@ public class CapturePacket implements Serializable {
 
 		return packet;
 	}
+	
+    public byte calculatePacketByteLength() {
+        // Length field is part of the packet structure
+        byte length = 0;
+
+        // Add the lengths of fields excluding start bytes, length, and checksum
+        length += 1;  // groupID
+        length += 1;  // axisID
+        length += 1;  // opcodeHigh
+        length += 1;  // opcodeLow
+
+        // Assuming 'data' is a byte array; add its length
+        if (dataArray != null) {
+            length += (byte) dataArray.length;
+        }
+
+        return length;
+    }
 
 	public byte getLength() {
 		return length;

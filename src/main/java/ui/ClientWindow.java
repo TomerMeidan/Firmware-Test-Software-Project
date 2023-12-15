@@ -1,19 +1,9 @@
 package ui;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import controllers.ClientPortalView;
 import javafx.application.Platform;
@@ -24,18 +14,19 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
+import model.CapturePacket;
 import model.GroupCommand;
 import model.NameCommand;
 import model.TypeCommand;
 import util.JsonFileReader;
+import util.Parser;
 
+@SuppressWarnings({ "restriction", "unchecked" })
 public class ClientWindow {
 
 	private Stage primaryStage;
@@ -43,7 +34,9 @@ public class ClientWindow {
 	private Scene scene;
 	private ClientPortalView view;
 	private JSONArray commandsArrayDictionary;
-	private HashMap<String, TypeCommand> types;
+	private HashMap<String, TypeCommand> commandTypes;
+	private HashMap<String, Byte> axisList;
+	private ArrayList<CapturePacket> packetArray = null;
 
 	// Selected items from gui
 	private String selectedType = null;
@@ -119,8 +112,64 @@ public class ClientWindow {
 	}
 
 	@FXML
-	void onAddButtonClick(MouseEvent event) {
+	void onAddButtonClick(ActionEvent event) {
 
+		// Find the relevant command based of selections
+		if (selectedType == null || selectedGroup == null || selectedCommandName == null) {
+			System.out.println(
+					"ClientWindow: onAddButtonClick: One or more paramaters are not selected for the command to be built.");
+			return;
+		}
+		NameCommand requestedCommandData = commandTypes.get(selectedType).getGroups().get(selectedGroup).getCommandNames()
+				.get(selectedCommandName);
+
+		// Build the packet
+		CapturePacket commandPacket = buildRequestedCommandPacket(requestedCommandData);
+		System.out.println("ClientWindow: onAddButtonClick: Packet is built based on user selections.");
+
+		
+		// Add the packet to array of packets
+		System.out.println("ClientWindow: onAddButtonClick: Packet has been added to packet list.");
+		packetArray.add(commandPacket);
+
+	}
+
+	private CapturePacket buildRequestedCommandPacket(NameCommand requestedCommand) {
+		CapturePacket commandPacket = new CapturePacket();
+
+		// Group ID Byte
+		commandPacket.setGroupId((byte) 0);
+		// Axis ID Byte
+		byte axisID = 0;
+		if (selectedAxis != null)
+			axisID = axisList.get(selectedAxis);
+		commandPacket.setAxisId(axisID);
+
+		// Opcode High and Low
+		String[] str = Parser.splitHex(requestedCommand.getOpCode());
+		String opCodeHigh = str[0];
+		String opCodeLow = str[1];
+
+		byte highOpByte = Parser.hexStringToByte(opCodeHigh);
+		byte lowOpByte = Parser.hexStringToByte(opCodeLow);
+
+		commandPacket.setOpcodeHigh(highOpByte);
+		commandPacket.setOpcodeLow(lowOpByte);
+
+		// Data
+		// TODO Fix the data addign strings, make sure to check if the data
+		// Even exists first and only then add it to the Packet Object
+		if (!dataInputTextBox.getText().isEmpty())
+			commandPacket.setDataArray(null);
+		else
+			commandPacket.setDataArray(null);
+
+		// Checksum
+		commandPacket.setChecksum(commandPacket.calculateChecksum());
+
+		// Length byte
+		commandPacket.setLength(commandPacket.calculatePacketByteLength());
+		return commandPacket;
 	}
 
 	@FXML
@@ -140,6 +189,7 @@ public class ClientWindow {
 		selectedGroup = null;
 		selectedCommandName = null;
 		selectedAxis = null;
+		packetArray = new ArrayList<>();
 
 		commandDescriptionTextBox.setText("");
 		commandUnitTextBox.setText("None");
@@ -150,18 +200,15 @@ public class ClientWindow {
 	}
 
 	@FXML
-	void onCommandButtonPress(ActionEvent event) {
-
+	void onSaveToFileButtonPress(ActionEvent event) {
+		// TODO On save file button click
 	}
 
 	@FXML
-	void onSaveFileButtonClick(MouseEvent event) {
-
-	}
-
-	@FXML
-	void onSendCommandButtonClick(MouseEvent event) {
-
+	void onSendCommandButtonPress(ActionEvent event) {
+		// TODO On send command button click
+		
+		packetArray = new ArrayList<>();
 	}
 
 	@FXML
@@ -175,6 +222,7 @@ public class ClientWindow {
 		this.primaryStage = primaryStage;
 		this.view = clientPortalView;
 		scene = new Scene(homePageVBox);
+		packetArray = new ArrayList<>();
 		initDataTypes();
 		initAxisTypes();
 	}
@@ -207,6 +255,9 @@ public class ClientWindow {
 			controllerConnectionStatus.setText("ONLINE");
 			controllerConnectionStatus.setTextFill(Paint.valueOf("GREEN"));
 			commandSaveButton.setDisable(false);
+			commandSendButton.setDisable(false);
+			addCommandButton.setDisable(false);
+			clearCommandButton.setDisable(false);
 
 		});
 	}
@@ -219,6 +270,9 @@ public class ClientWindow {
 			controllerConnectionStatus.setText("OFFLINE");
 			controllerConnectionStatus.setTextFill(Paint.valueOf("RED"));
 			commandSaveButton.setDisable(true);
+			commandSendButton.setDisable(true);
+			addCommandButton.setDisable(true);
+			clearCommandButton.setDisable(true);
 		});
 	}
 
@@ -226,13 +280,13 @@ public class ClientWindow {
 		String filePath = "src/main/java/util/commandsDictionary.json";
 		commandsArrayDictionary = JsonFileReader.readJsonFile(filePath);
 
-		types = new HashMap<>();
+		commandTypes = new HashMap<>();
 
 		try {
 			for (int i = 0; i < commandsArrayDictionary.size(); i++) {
 				JSONObject json = (JSONObject) commandsArrayDictionary.get(i);
 				TypeCommand typeCommand = new TypeCommand(json);
-				types.put(typeCommand.getName(), typeCommand);
+				commandTypes.put(typeCommand.getName(), typeCommand);
 				comboType.getItems().add((String) json.get("type"));
 			}
 			System.out.println("ClientWindow: API Commands loaded succesfully.");
@@ -246,9 +300,15 @@ public class ClientWindow {
 
 	public void initAxisTypes() {
 		comboAxis.getItems().addAll("Yaw", "Pitch", "Roll");
+		
+		axisList = new HashMap<>(); 
+		axisList.put("Yaw", (byte) 0x01);
+		axisList.put("Pitch", (byte) 0x02);
+		axisList.put("Roll", (byte) 0x03);
 	}
 
 	private void handleComboBoxSelection(ActionEvent event) {
+
 		ComboBox<String> comboBox = (ComboBox<String>) event.getTarget();
 		String selectedItem = (String) comboBox.getSelectionModel().getSelectedItem();
 		if (selectedItem == null)
@@ -265,17 +325,12 @@ public class ClientWindow {
 			selectedCommandName = null;
 			System.out.println("ClientWindow: handleComboBoxSelection: Selected command type: " + selectedItem);
 
-			TypeCommand typeCommand = types.get(selectedItem);
+			TypeCommand typeCommand = commandTypes.get(selectedItem);
 			selectedType = selectedItem;
 
 			// Building group type list
 			typeCommand.getGroups().forEach((groupName, commandList) -> {
 				comboGroup.getItems().add(groupName);
-
-//				commandList.getCommandNames().forEach((commandName, v) -> {
-//					comboName.getItems().add(commandName);
-//				});
-
 			});
 
 			comboGroup.setDisable(false);
@@ -289,12 +344,12 @@ public class ClientWindow {
 			selectedGroup = selectedItem;
 			System.out.println("ClientWindow: handleComboBoxSelection: Selected command group: " + selectedItem);
 
-			TypeCommand typeCommand1 = types.get(selectedType);
+			TypeCommand typeCommand1 = commandTypes.get(selectedType);
 			GroupCommand groupCommand = typeCommand1.getGroups().get(selectedGroup);
 
 			// Building group type list
-			groupCommand.getCommandNames().forEach((groupName, commandList) -> {
-				comboName.getItems().add(groupName);
+			groupCommand.getCommandNames().forEach((commandName, commandList) -> {
+				comboName.getItems().add(commandName);
 			});
 
 			comboName.setDisable(false);
@@ -309,22 +364,12 @@ public class ClientWindow {
 			System.out.println("ClientWindow: handleComboBoxSelection: Selected command name: " + selectedItem);
 			selectedCommandName = selectedItem;
 
-			TypeCommand typeCommand2 = types.get(selectedType);
+			TypeCommand typeCommand2 = commandTypes.get(selectedType);
 			GroupCommand groupCommand1 = typeCommand2.getGroups().get(selectedGroup);
 			NameCommand nameCommand = groupCommand1.getCommandNames().get(selectedCommandName);
 
-			commandDescriptionTextBox.setText(nameCommand.getDescription());
+			setCommandInformation(nameCommand);
 
-			if (nameCommand.getDataSendUnit().equals("None"))
-				commandUnitTextBox.setText(nameCommand.getDataReturnUnit() + " (Returning data)");
-			else if (nameCommand.getDataReturnUnit().equals("None"))
-				commandUnitTextBox.setText(nameCommand.getDataSendUnit() + " (Sending data)");
-			
-			if (nameCommand.getDataSendFormat().equals("None"))
-				commandFormatTextBox.setText(nameCommand.getReturnFormat() + " (Returning data)");
-			else if (nameCommand.getReturnFormat().equals("None"))
-				commandFormatTextBox.setText(nameCommand.getDataSendFormat() + " (Sending data)");
-			
 			break;
 
 		case "comboAxis":
@@ -336,6 +381,20 @@ public class ClientWindow {
 			break;
 		}
 
+	}
+
+	private void setCommandInformation(NameCommand nameCommand) {
+		commandDescriptionTextBox.setText(nameCommand.getDescription());
+
+		if (nameCommand.getDataSendUnit().equals("None"))
+			commandUnitTextBox.setText(nameCommand.getDataReturnUnit() + " (Returning data)");
+		else if (nameCommand.getDataReturnUnit().equals("None"))
+			commandUnitTextBox.setText(nameCommand.getDataSendUnit() + " (Sending data)");
+
+		if (nameCommand.getDataSendFormat().equals("None"))
+			commandFormatTextBox.setText(nameCommand.getReturnFormat() + " (Returning data)");
+		else if (nameCommand.getReturnFormat().equals("None"))
+			commandFormatTextBox.setText(nameCommand.getDataSendFormat() + " (Sending data)");
 	}
 
 }

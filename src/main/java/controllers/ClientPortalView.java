@@ -10,6 +10,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import ui.ClientWindow;
 
+@SuppressWarnings("restriction")
 public class ClientPortalView implements PortalViewInterface {
 
 	private Stage primaryStage;

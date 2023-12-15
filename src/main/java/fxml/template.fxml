@@ -73,7 +73,7 @@
                            </font>
                         </Label>
                         <ComboBox fx:id="comboAxis" onAction="#onComboAxisClick" prefHeight="25.0" prefWidth="91.0" />
-                        <Button fx:id="clearCommandButton" mnemonicParsing="false" onAction="#onClearButtonClick" style="-fx-background-color: #D93B48;" text="CLEAR" textFill="WHITE">
+                        <Button fx:id="clearCommandButton" disable="true" mnemonicParsing="false" onAction="#onClearButtonClick" style="-fx-background-color: #D93B48;" text="CLEAR" textFill="WHITE">
                            <HBox.margin>
                               <Insets left="25.0" />
                            </HBox.margin>
@@ -84,7 +84,7 @@
                               <Blend />
                            </effect>
                         </Button>
-                        <Button fx:id="addCommandButton" mnemonicParsing="false" onMouseClicked="#onAddButtonClick" style="-fx-background-color: #D93B48;" text="ADD" textFill="WHITE">
+                        <Button fx:id="addCommandButton" disable="true" mnemonicParsing="false" onAction="#onAddButtonClick" style="-fx-background-color: #D93B48;" text="ADD" textFill="WHITE">
                            <font>
                               <Font name="System Bold" size="10.0" />
                            </font>
@@ -186,7 +186,7 @@
                      <children>
                         <HBox alignment="TOP_CENTER" prefWidth="706.0">
                            <children>
-                              <Button fx:id="commandSendButton" contentDisplay="CENTER" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onCommandButtonPress" onMouseClicked="#onSendCommandButtonClick" prefHeight="17.0" prefWidth="206.0" style="-fx-background-color: #D93B48;" text="Send" textFill="WHITE">
+                              <Button fx:id="commandSendButton" contentDisplay="CENTER" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onSendCommandButtonPress" prefHeight="17.0" prefWidth="206.0" style="-fx-background-color: #D93B48;" text="Send" textFill="WHITE">
                                  <font>
                                     <Font size="29.0" />
                                  </font>
@@ -194,7 +194,7 @@
                                     <Insets right="50.0" />
                                  </HBox.margin>
                               </Button>
-                              <Button fx:id="commandSaveButton" contentDisplay="CENTER" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onCommandButtonPress" onMouseClicked="#onSaveFileButtonClick" prefHeight="63.0" prefWidth="206.0" style="-fx-background-color: #D93B48;" text="Save" textFill="WHITE">
+                              <Button fx:id="commandSaveButton" contentDisplay="CENTER" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onSaveToFileButtonPress" prefHeight="63.0" prefWidth="206.0" style="-fx-background-color: #D93B48;" text="Save to File" textFill="WHITE">
                                  <font>
                                     <Font size="29.0" />
                                  </font>
