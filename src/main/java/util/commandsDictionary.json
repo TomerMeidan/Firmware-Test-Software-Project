@@ -1,0 +1,190 @@
+[
+  {
+    "type": "Set Data",
+    "payload": [
+      {
+        "group": "MOT",
+        "payload": [
+          {
+            "name": "setAcceleration",
+            "opCode": "0x0130",
+            "dataSendFormat": "Floating point 32-bit",
+            "dataSendUnit": "Degrees/Sec^2",
+            "returnFormat": "None",
+            "dataReturnUnit": "None",
+            "description": "Set the motor acceleration.",
+            "remark": "The acceleration value should be greater than 0."
+          },
+          {
+            "name": "setSpeed",
+            "opCode": "0x0131",
+            "dataSendFormat": "Floating point 32-bit",
+            "dataSendUnit": "Degrees/Sec",
+            "returnFormat": "None",
+            "dataReturnUnit": "None",
+            "description": "Set the motor speed.",
+            "remark": "After sending Acceleration and Speed, the value remains in the system. Another command is needed only if there is a need to change those values."
+          },
+          {
+            "name": "sendPosition",
+            "opCode": "0x0132",
+            "dataSendFormat": "Floating point 32-bit",
+            "dataSendUnit": "Degrees",
+            "returnFormat": "None",
+            "dataReturnUnit": "None",
+            "description": "Send the desired amount of movement to the motor",
+            "remark": "Position command (with the last given speed and acceleration) will be executed only after a MOT_Update command."
+          },
+          {
+            "name": "update",
+            "opCode": "0x0134",
+            "dataSendFormat": "None",
+            "dataSendUnit": "None",
+            "returnFormat": "None",
+            "dataReturnUnit": "None",
+            "description": "Update (Execute) the current motion set.",
+            "remark": "Remark: After a MOT_Update command, the specified motor will execute the current motion profile using the last motion related commands. These commands include: MOT_SetAcceleration, MOT_SetSpeed, MOT_SendPosition , MotionComplete, etc…"
+          },
+          {
+            "name": "setNegSWLS",
+            "opCode": "0x0136",
+            "dataSendFormat": "Floating point 32-bit",
+            "dataSendUnit": "Degrees",
+            "returnFormat": "None",
+            "dataReturnUnit": "None",
+            "description": "Set the negative software limit switch.",
+            "remark": "The value should be less than the positive software limit switch."
+          },
+          {
+            "name": "setPosSWLS",
+            "opCode": "0x0137",
+            "dataSendFormat": "Floating point 32-bit",
+            "dataSendUnit": "Degrees",
+            "returnFormat": "None",
+            "dataReturnUnit": "None",
+            "description": "Set the positive software limit switch.",
+            "remark": "The value should be greater than the negative software limit switch."
+          },
+          {
+            "name": "activateSWLS",
+            "opCode": "0x0146",
+            "dataSendFormat": "Uint-8",
+            "dataSendUnit": "Boolean",
+            "returnFormat": "None",
+            "dataReturnUnit": "None",
+            "description": "Enable the software limit switch.",
+            "remark": "When the value is 1, the SWLS will be activated. When the value is 0, the SWLS will be deactivated. If the SWLS is enabled, a motor error will occur when the motors reach the limit. To activate the SWLS, the motor position should be in a valid range."
+          },
+          {
+            "name": "setPositionRelative",
+            "opCode": "0x0138",
+            "dataSendFormat": "None",
+            "dataSendUnit": "None",
+            "returnFormat": "None",
+            "dataReturnUnit": "None",
+            "description": "Setting the position commands to be relative.",
+            "remark": "In Relative Mode, the position commands will be added to the current position."
+          },
+          {
+            "name": "setPositionAbsolute",
+            "opCode": "0x0139",
+            "dataSendFormat": "None",
+            "dataSendUnit": "None",
+            "returnFormat": "None",
+            "dataReturnUnit": "None",
+            "description": "Setting the position commands to be absolute.",
+            "remark": "In Absolute Mode, the position commands will result in absolute movement of the motor. The motor will move until the position of the motor is as mentioned in the data sent with the current command. The Position command should be in a range of 0 to 360 degrees; negative values will be ignored."
+          },
+          {
+            "name": "setSpeedMode",
+            "opCode": "0x013A",
+            "dataSendFormat": "None",
+            "dataSendUnit": "None",
+            "returnFormat": "None",
+            "dataReturnUnit": "None",
+            "description": "Setting the motor to speed mode operation.",
+            "remark": "In Speed mode, the motor will rotate at a constant speed after receiving a MOT_SetSpeed command followed by a MOT_Update command. The motor will keep rotating at the given speed until it receives a different speed (which can be zero speed to stop the motor) or until a MOT_SetPositionMode is received."
+          },
+          {
+            "name": "setPositionMode",
+            "opCode": "0x013B",
+            "dataSendFormat": "None",
+            "dataSendUnit": "None",
+            "returnFormat": "None",
+            "dataReturnUnit": "None",
+            "description": "Setting the motor to position mode operation.",
+            "remark": "In position mode, to get the motor to rotate, a MOT_SendPosition command must be sent followed by a MOT_Update command."
+          },
+          {
+            "name": "setTum",
+            "opCode": "0x013F",
+            "dataSendFormat": "None",
+            "dataSendUnit": "None",
+            "returnFormat": "None",
+            "dataReturnUnit": "None",
+            "description": "Update the motion profile parameters.",
+            "remark": "Target Update Mode, build a new motion profile (with acceleration, speed, and position) from scratch each time a MOT_Update command is sent. When not sending this command, the motion profile will use the last parameters. In some cases, the motor will not move properly if this command is missing from the motion commands before sending MOT_Update command. It is advisable to send this command before each command session."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "Get Data",
+    "payload": [
+      {
+        "group": "MOT",
+        "payload": [
+          {
+            "name": "getMaxCurrent",
+            "opCode": "0x012E",
+            "dataSendFormat": "None",
+            "dataSendUnit": "None",
+            "returnFormat": "Floating point 32-bit",
+            "dataReturnUnit": "milli-Amps",
+            "description": "Get the maximum allowed current."
+          },
+          {
+            "name": "getMotorPosition",
+            "opCode": "0x0108",
+            "dataSendFormat": "None",
+            "dataSendUnit": "None",
+            "returnFormat": "Floating point 32-bit",
+            "dataReturnUnit": "Degrees",
+            "description": "Get the actual motor position before Gear Ratio."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "type": "IP Change",
+    "payload": [
+      {
+        "group": "IP",
+        "payload": [
+          {
+            "name": "setControllerIP",
+            "opCode": "0x070A",
+            "dataSendFormat": "4 byte hex value",
+            "dataSendUnit": "IP Address",
+            "returnFormat": "None",
+            "dataReturnUnit": "None",
+            "description": "Send a new IP address for the controller.",
+            "remark": "The data in this message is the new IP address for the controller in 4 bytes format. Example: The address 192.168.10.13 will be sent as: 0xC0, 0xA8, 0x0A, 0x0D. The new IP address will be activated after reboot."
+          },
+          {
+            "name": "getControllerIP",
+            "opCode": "0x070D",
+            "dataSendFormat": "None",
+            "dataSendUnit": "None",
+            "returnFormat": "4 byte hex value",
+            "dataReturnUnit": "IP Address",
+            "description": "Get the current IP value of the controller.",
+            "remark": "The IP address will return as a set of 4 bytes. Example: The data 0xC0, 0xA8, 0x0A, 0x0D represents the address 192.168.10.13."
+          }
+        ]
+      }
+    ]
+  }
+]
