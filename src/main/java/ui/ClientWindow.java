@@ -120,17 +120,18 @@ public class ClientWindow {
 					"ClientWindow: onAddButtonClick: One or more paramaters are not selected for the command to be built.");
 			return;
 		}
-		NameCommand requestedCommandData = commandTypes.get(selectedType).getGroups().get(selectedGroup).getCommandNames()
-				.get(selectedCommandName);
+		NameCommand requestedCommandData = commandTypes.get(selectedType).getGroups().get(selectedGroup)
+				.getCommandNames().get(selectedCommandName);
 
 		// Build the packet
 		CapturePacket commandPacket = buildRequestedCommandPacket(requestedCommandData);
 		System.out.println("ClientWindow: onAddButtonClick: Packet is built based on user selections.");
 
-		
 		// Add the packet to array of packets
-		System.out.println("ClientWindow: onAddButtonClick: Packet has been added to packet list.");
 		packetArray.add(commandPacket);
+		System.out.println("ClientWindow: onAddButtonClick: Packet has been added to packet list.");
+		String packetTitle = selectedType + " " + selectedGroup + " " + selectedCommandName + " " + selectedAxis;
+		commandsListView.getItems().add(packetTitle);
 
 	}
 
@@ -157,12 +158,8 @@ public class ClientWindow {
 		commandPacket.setOpcodeLow(lowOpByte);
 
 		// Data
-		// TODO Fix the data addign strings, make sure to check if the data
-		// Even exists first and only then add it to the Packet Object
-		if (!dataInputTextBox.getText().isEmpty())
-			commandPacket.setDataArray(null);
-		else
-			commandPacket.setDataArray(null);
+		// TODO What to do about send or receive data format (SET/GET)
+		buildPacketData(requestedCommand, commandPacket);
 
 		// Checksum
 		commandPacket.setChecksum(commandPacket.calculateChecksum());
@@ -170,6 +167,20 @@ public class ClientWindow {
 		// Length byte
 		commandPacket.setLength(commandPacket.calculatePacketByteLength());
 		return commandPacket;
+	}
+
+	private void buildPacketData(NameCommand requestedCommand, CapturePacket commandPacket) {
+		if (!dataInputTextBox.getText().isEmpty()) {
+			String dataString = dataInputTextBox.getText();
+			try {
+				byte[] data = Parser.getByteArrayByFormatType(requestedCommand.getDataSendFormat(), dataString);
+				commandPacket.setDataArray(data);
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+				commandPacket.setDataArray(null);
+			}
+		} else
+			commandPacket.setDataArray(null);
 	}
 
 	@FXML
@@ -194,7 +205,8 @@ public class ClientWindow {
 		commandDescriptionTextBox.setText("");
 		commandUnitTextBox.setText("None");
 		commandFormatTextBox.setText("None");
-
+		commandsListView.getItems().clear();
+		
 		System.out.println("ClientWindow: onClearButtonClick: cleared selections from screen.");
 
 	}
@@ -207,7 +219,7 @@ public class ClientWindow {
 	@FXML
 	void onSendCommandButtonPress(ActionEvent event) {
 		// TODO On send command button click
-		
+
 		packetArray = new ArrayList<>();
 	}
 
@@ -220,6 +232,7 @@ public class ClientWindow {
 	public void init(VBox homePageVBox, Stage primaryStage, ClientPortalView clientPortalView) {
 		this.homePageVBox = homePageVBox;
 		this.primaryStage = primaryStage;
+		primaryStage.setTitle("Micro Controller API Tester");
 		this.view = clientPortalView;
 		scene = new Scene(homePageVBox);
 		packetArray = new ArrayList<>();
@@ -300,8 +313,8 @@ public class ClientWindow {
 
 	public void initAxisTypes() {
 		comboAxis.getItems().addAll("Yaw", "Pitch", "Roll");
-		
-		axisList = new HashMap<>(); 
+
+		axisList = new HashMap<>();
 		axisList.put("Yaw", (byte) 0x01);
 		axisList.put("Pitch", (byte) 0x02);
 		axisList.put("Roll", (byte) 0x03);

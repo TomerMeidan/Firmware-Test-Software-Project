@@ -3,34 +3,23 @@ package controllers;
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
 
 /**
- * The Communicator contains all the methods necessary to set
- * up the client side of a client-server architecture. When a client is thus
- * connected to the server, the two programs can then exchange Object instances.
- * <p>
+ * The Communicator encompasses all the methods essential for configuring the
+ * client side of a client-micro-controller exchange. Once a client
+ * establishes a connection with the micro-controller, the two entities can
+ * seamlessly exchange Object instances, facilitating the transmission and
+ * reception of data through Capture Systems Ltd. API calls.
+ *
  */
 public abstract class Communicator implements Runnable {
 
 	// INSTANCE VARIABLES ***********************************************
 
-	/**
-	 * Sockets are used in the operating system as channels of communication between
-	 * two processes.
-	 * 
-	 * @see java.net.Socket
-	 */
+	private String host;
+	private int port;
 	private Socket clientSocket;
-
-	/**
-	 * The stream to handle data going to the server.
-	 */
 	private ObjectOutputStream output;
-
-	/**
-	 * The stream to handle data from the server.
-	 */
 	private ObjectInputStream input;
 
 	/**
@@ -44,24 +33,8 @@ public abstract class Communicator implements Runnable {
 	 */
 	private boolean readyToStop = false;
 
-	/**
-	 * The server's host name.
-	 */
-	private String host;
-
-	/**
-	 * The port number.
-	 */
-	private int port;
-
 	// CONSTRUCTORS *****************************************************
 
-	/**
-	 * Constructs the client.
-	 *
-	 * @param host the server's host name.
-	 * @param port the port number.
-	 */
 	public Communicator(String host, int port) {
 		// Initialize variables
 		this.host = host;
@@ -73,8 +46,6 @@ public abstract class Communicator implements Runnable {
 	/**
 	 * Opens the connection with the server. If the connection is already opened,
 	 * this call has no effect.
-	 *
-	 * @exception IOException if an I/O error occurs when opening.
 	 */
 	final public void openConnectionToServer() throws IOException {
 		// Do not do anything if the connection is already open
@@ -104,11 +75,7 @@ public abstract class Communicator implements Runnable {
 	}
 
 	/**
-	 * Sends an object to the server. This is the only way that methods should
-	 * communicate with the server.
-	 *
-	 * @param msg The message to be sent.
-	 * @exception IOException if an I/O error occurs when sending
+	 * Sends an object to the server.
 	 */
 	final public void sendToServer(byte[] msg) throws IOException {
 		if (clientSocket == null || output == null)
@@ -151,9 +118,8 @@ public abstract class Communicator implements Runnable {
 	}
 
 	/**
-	 * Sets the server port number for the next connection. The change in port only
-	 * takes effect at the time of the next call to openConnection().
-	 *
+	 * Sets the server port number for the next connection.
+	 * 
 	 * @param port the port number.
 	 */
 	final public void setPort(int port) {
@@ -168,10 +134,7 @@ public abstract class Communicator implements Runnable {
 	}
 
 	/**
-	 * Sets the server host for the next connection. The change in host only takes
-	 * effect at the time of the next call to openConnection().
-	 *
-	 * @param host the host name.
+	 * Sets the server host for the next connection.
 	 */
 	final public void setHost(String host) {
 		this.host = host;
@@ -179,8 +142,6 @@ public abstract class Communicator implements Runnable {
 
 	/**
 	 * returns the client's description.
-	 *
-	 * @return the client's Inet address.
 	 */
 	final public InetAddress getInetAddress() {
 		return clientSocket.getInetAddress();
@@ -190,7 +151,7 @@ public abstract class Communicator implements Runnable {
 
 	/**
 	 * Waits for messages from the server. When each arrives, a call is made to
-	 * <code>handleMessageFromServer()</code>. Not to be explicitly called.
+	 * <code>handleMessageFromServer()</code>.
 	 */
 	final public void run() {
 		connectionEstablished();
@@ -202,9 +163,6 @@ public abstract class Communicator implements Runnable {
 
 		try {
 			while (!readyToStop) {
-				// Get data from Server and send it to the handler
-				// The thread waits indefinitely at the following
-				// statement until something is received from the server
 				msg = input.readObject();
 
 				// Concrete subclasses do what they want with the
@@ -237,36 +195,26 @@ public abstract class Communicator implements Runnable {
 
 	/**
 	 * Hook method called after the connection has been closed. The default
-	 * implementation does nothing. The method may be overriden by subclasses to
-	 * perform special processing such as cleaning up and terminating, or attempting
-	 * to reconnect.
+	 * implementation does nothing.
 	 */
 	protected void connectionClosed() {
 	}
 
 	/**
 	 * Hook method called each time an exception is thrown by the client's thread
-	 * that is waiting for messages from the server. The method may be overridden by
-	 * subclasses.
-	 *
-	 * @param exception the exception raised.
+	 * that is waiting for messages from the server.
 	 */
 	protected void connectionException(Exception exception) {
 	}
 
 	/**
-	 * Hook method called after a connection has been established. The default
-	 * implementation does nothing. It may be overridden by subclasses to do
-	 * anything they wish.
+	 * Hook method called after a connection has been established.
 	 */
 	protected void connectionEstablished() {
 	}
 
 	/**
-	 * Handles a message sent from the server to this client. This MUST be
-	 * implemented by subclasses, who should respond to messages.
-	 *
-	 * @param msg the message sent.
+	 * Handles a message sent from the server to this client.
 	 */
 	protected abstract void handleMessageFromServer(byte[] msg);
 
@@ -274,8 +222,6 @@ public abstract class Communicator implements Runnable {
 
 	/**
 	 * Closes all aspects of the connection to the server.
-	 *
-	 * @exception IOException if an I/O error occurs when closing.
 	 */
 	private void closeAll() throws IOException {
 		try {
@@ -291,14 +237,9 @@ public abstract class Communicator implements Runnable {
 			if (input != null)
 				input.close();
 		} finally {
-			// Set the streams and the sockets to NULL no matter what
-			// Doing so allows, but does not require, any finalizers
-			// of these objects to reclaim system resources if and
-			// when they are garbage collected.
 			output = null;
 			input = null;
 			clientSocket = null;
 		}
 	}
 }
-// end of AbstractClient class
