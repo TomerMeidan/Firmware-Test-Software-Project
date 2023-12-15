@@ -34,5 +34,9 @@ public class GroupCommand extends Command {
 		    commandNames.put(nameCommand.getName(), nameCommand);
 		}
 	}
+	
+	public HashMap<String, NameCommand> getCommandNames() {
+		return commandNames;
+	}
 
 }

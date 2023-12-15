@@ -60,19 +60,19 @@
                               <Font size="15.0" />
                            </font>
                         </Label>
-                        <ComboBox fx:id="comboGroup" disable="true" prefHeight="25.0" prefWidth="91.0" />
+                        <ComboBox fx:id="comboGroup" disable="true" onAction="#onComboGroupClick" prefHeight="25.0" prefWidth="91.0" />
                         <Label alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="26.0" prefWidth="65.0" text="Name:">
                            <font>
                               <Font size="15.0" />
                            </font>
                         </Label>
-                        <ComboBox fx:id="comboName" disable="true" prefHeight="25.0" prefWidth="91.0" />
+                        <ComboBox fx:id="comboName" disable="true" onAction="#onComboCommandNameClick" prefHeight="25.0" prefWidth="91.0" />
                         <Label alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="26.0" prefWidth="57.0" text="Axis:">
                            <font>
                               <Font size="15.0" />
                            </font>
                         </Label>
-                        <ComboBox fx:id="comboAxis" prefHeight="25.0" prefWidth="91.0" />
+                        <ComboBox fx:id="comboAxis" onAction="#onComboAxisClick" prefHeight="25.0" prefWidth="91.0" />
                         <Button fx:id="clearCommandButton" mnemonicParsing="false" onAction="#onClearButtonClick" style="-fx-background-color: #D93B48;" text="CLEAR" textFill="WHITE">
                            <HBox.margin>
                               <Insets left="25.0" />
@@ -84,7 +84,7 @@
                               <Blend />
                            </effect>
                         </Button>
-                        <Button fx:id="addCommandButton1" mnemonicParsing="false" onMouseClicked="#onAddButtonClick" style="-fx-background-color: #D93B48;" text="ADD" textFill="WHITE">
+                        <Button fx:id="addCommandButton" mnemonicParsing="false" onMouseClicked="#onAddButtonClick" style="-fx-background-color: #D93B48;" text="ADD" textFill="WHITE">
                            <font>
                               <Font name="System Bold" size="10.0" />
                            </font>
@@ -99,45 +99,68 @@
                   </HBox>
                   <HBox prefHeight="51.0" prefWidth="736.0" style="-fx-border-color: #EE4B2B; -fx-border-radius: 15px;">
                      <children>
-                        <Label alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="51.0" prefWidth="128.0" text="Command Description:" HBox.hgrow="ALWAYS">
+                        <Label alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="49.0" prefWidth="153.0" text="Command Description:" HBox.hgrow="ALWAYS">
                            <HBox.margin>
                               <Insets left="10.0" />
                            </HBox.margin>
+                           <font>
+                              <Font size="14.0" />
+                           </font>
                         </Label>
-                        <Label fx:id="commandDescriptionTextBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="51.0" prefWidth="547.0" />
+                        <Label fx:id="commandDescriptionTextBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="51.0" prefWidth="547.0">
+                           <font>
+                              <Font size="14.0" />
+                           </font></Label>
                      </children>
                   </HBox>
                   <HBox prefHeight="98.0" prefWidth="736.0" style="-fx-border-color: #EE4B2B; -fx-border-radius: 25px;" VBox.vgrow="ALWAYS">
                      <children>
                         <VBox prefHeight="304.0" prefWidth="453.0">
                            <children>
-                              <HBox prefHeight="23.0" prefWidth="736.0">
+                              <HBox prefHeight="23.0" prefWidth="736.0" style="-fx-border-color: #EE4B2B; -fx-border-radius: 15px;">
                                  <children>
-                                    <Label alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="51.0" prefWidth="175.0" text="Data:" HBox.hgrow="ALWAYS">
+                                    <Label alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="39.0" prefWidth="65.0" text="Data:" HBox.hgrow="ALWAYS">
                                        <font>
-                                          <Font size="27.0" />
+                                          <Font name="System Bold" size="18.0" />
                                        </font>
                                     </Label>
-                                    <TextField fx:id="dataInputTextBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="39.0" prefWidth="163.0">
+                                    <TextField fx:id="dataInputTextBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="39.0" prefWidth="374.0">
                                        <font>
                                           <Font size="18.0" />
                                        </font>
                                     </TextField>
                                  </children>
                                  <VBox.margin>
-                                    <Insets />
+                                    <Insets bottom="10.0" />
                                  </VBox.margin>
                               </HBox>
-                              <HBox prefHeight="51.0" prefWidth="736.0">
+                              <HBox prefHeight="51.0" prefWidth="736.0" style="-fx-border-color: #EE4B2B; -fx-border-radius: 15px;">
                                  <children>
-                                    <Label alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="51.0" prefWidth="175.0" text="Units:" HBox.hgrow="ALWAYS">
+                                    <Label alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="51.0" prefWidth="70.0" text="Units:" HBox.hgrow="ALWAYS">
                                        <font>
-                                          <Font size="27.0" />
+                                          <Font name="System Bold" size="18.0" />
                                        </font>
                                     </Label>
-                                    <Label fx:id="commandUnitTextBox" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="51.0" prefWidth="175.0" text="None">
+                                    <Label fx:id="commandUnitTextBox" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="51.0" prefWidth="383.0" text="None">
                                        <font>
-                                          <Font size="27.0" />
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Label>
+                                 </children>
+                                 <VBox.margin>
+                                    <Insets bottom="10.0" />
+                                 </VBox.margin>
+                              </HBox>
+                              <HBox prefHeight="51.0" prefWidth="736.0" style="-fx-border-color: #EE4B2B; -fx-border-radius: 15px;">
+                                 <children>
+                                    <Label alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="49.0" prefWidth="100.0" text="Format:" HBox.hgrow="ALWAYS">
+                                       <font>
+                                          <Font name="System Bold" size="18.0" />
+                                       </font>
+                                    </Label>
+                                    <Label fx:id="commandFormatTextBox" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="51.0" prefWidth="383.0" text="None">
+                                       <font>
+                                          <Font size="14.0" />
                                        </font>
                                     </Label>
                                  </children>
@@ -147,7 +170,10 @@
                               <Insets top="75.0" />
                            </padding>
                         </VBox>
-                        <ListView fx:id="commandsListView" prefHeight="200.0" prefWidth="200.0" />
+                        <ListView fx:id="commandsListView" prefHeight="200.0" prefWidth="200.0" style="-fx-border-color: #EE4B2B;">
+                           <HBox.margin>
+                              <Insets left="25.0" />
+                           </HBox.margin></ListView>
                      </children>
                      <VBox.margin>
                         <Insets />

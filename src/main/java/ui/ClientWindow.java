@@ -32,6 +32,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
 import model.GroupCommand;
+import model.NameCommand;
 import model.TypeCommand;
 import util.JsonFileReader;
 
@@ -43,6 +44,12 @@ public class ClientWindow {
 	private ClientPortalView view;
 	private JSONArray commandsArrayDictionary;
 	private HashMap<String, TypeCommand> types;
+
+	// Selected items from gui
+	private String selectedType = null;
+	private String selectedGroup = null;
+	private String selectedCommandName = null;
+	private String selectedAxis = null;
 
 	// BUTTONS
 	@FXML
@@ -58,6 +65,9 @@ public class ClientWindow {
 	private Button commandSendButton;
 
 	// LABELS
+	@FXML
+	private Label commandFormatTextBox;
+
 	@FXML
 	private Label commandDescriptionTextBox;
 
@@ -91,6 +101,24 @@ public class ClientWindow {
 	private TextField dataInputTextBox;
 
 	@FXML
+	void onComboCommandNameClick(ActionEvent event) {
+		handleComboBoxSelection(event);
+
+	}
+
+	@FXML
+	void onComboGroupClick(ActionEvent event) {
+		handleComboBoxSelection(event);
+
+	}
+
+	@FXML
+	void onComboAxisClick(ActionEvent event) {
+		handleComboBoxSelection(event);
+
+	}
+
+	@FXML
 	void onAddButtonClick(MouseEvent event) {
 
 	}
@@ -100,15 +128,24 @@ public class ClientWindow {
 
 		// Clear the selection
 		comboType.getSelectionModel().clearSelection();
-		comboGroup.getSelectionModel().clearSelection();
-		comboName.getSelectionModel().clearSelection();
+		comboGroup.getItems().clear();
+		comboName.getItems().clear();
 		comboAxis.getSelectionModel().clearSelection();
 
 		// Disable the ComboBox
 		comboGroup.setDisable(true);
 		comboName.setDisable(true);
 
-		System.out.println("ClientWindow: command line cleared");
+		selectedType = null;
+		selectedGroup = null;
+		selectedCommandName = null;
+		selectedAxis = null;
+
+		commandDescriptionTextBox.setText("");
+		commandUnitTextBox.setText("None");
+		commandFormatTextBox.setText("None");
+
+		System.out.println("ClientWindow: onClearButtonClick: cleared selections from screen.");
 
 	}
 
@@ -188,18 +225,23 @@ public class ClientWindow {
 	public void initDataTypes() {
 		String filePath = "src/main/java/util/commandsDictionary.json";
 		commandsArrayDictionary = JsonFileReader.readJsonFile(filePath);
-		
+
 		types = new HashMap<>();
 
-        
-		for (int i = 0; i < commandsArrayDictionary.size(); i++) {
-			JSONObject json = (JSONObject) commandsArrayDictionary.get(i);
-			TypeCommand typeCommand = new TypeCommand(json);
-			types.put(typeCommand.getName(), typeCommand);
-			comboType.getItems().add((String) json.get("type"));
+		try {
+			for (int i = 0; i < commandsArrayDictionary.size(); i++) {
+				JSONObject json = (JSONObject) commandsArrayDictionary.get(i);
+				TypeCommand typeCommand = new TypeCommand(json);
+				types.put(typeCommand.getName(), typeCommand);
+				comboType.getItems().add((String) json.get("type"));
+			}
+			System.out.println("ClientWindow: API Commands loaded succesfully.");
+
+		} catch (Exception e) {
+			System.out.println("ClientWindow: (Exception Error) API Commands not loaded.");
+			e.printStackTrace();
 		}
-		
-		System.out.println("Test");
+
 	}
 
 	public void initAxisTypes() {
@@ -214,37 +256,84 @@ public class ClientWindow {
 		String comboBoxID = comboBox.getId();
 
 		switch (comboBoxID) {
-			case "comboType":
+		case "comboType":
 
-				// Clear the selection
-				comboGroup.getSelectionModel().clearSelection();
-				comboName.getSelectionModel().clearSelection();
+			// Clear the selection
+			comboGroup.getItems().clear();
+			comboName.getItems().clear();
+			selectedGroup = null;
+			selectedCommandName = null;
+			System.out.println("ClientWindow: handleComboBoxSelection: Selected command type: " + selectedItem);
 
-				// Disable the ComboBox
-				comboGroup.setDisable(true);
-				comboName.setDisable(true);
+			TypeCommand typeCommand = types.get(selectedItem);
+			selectedType = selectedItem;
 
-				System.out.println("Selected command type: " + selectedItem);
-				
-				TypeCommand typeCommand = types.get(selectedItem);
-				
-//		        ObservableList<String> items = FXCollections.observableArrayList();
-//		        for (GroupCommand groupCommand : typeCommand.getGroups().values()) {
-//		            items.add(groupCommand.getName());
-//		        }
+			// Building group type list
+			typeCommand.getGroups().forEach((groupName, commandList) -> {
+				comboGroup.getItems().add(groupName);
 
-				// Build the group type list
+//				commandList.getCommandNames().forEach((commandName, v) -> {
+//					comboName.getItems().add(commandName);
+//				});
 
-				break;
-			case "comboGroup":
-				System.out.println("Selected command group: " + selectedItem);
-				break;
-			case "comboName":
-				System.out.println("Selected command name: " + selectedItem);
-				break;
+			});
 
-			default:
-				break;
+			comboGroup.setDisable(false);
+
+			break;
+		case "comboGroup":
+
+			comboName.getItems().clear();
+			selectedCommandName = null;
+
+			selectedGroup = selectedItem;
+			System.out.println("ClientWindow: handleComboBoxSelection: Selected command group: " + selectedItem);
+
+			TypeCommand typeCommand1 = types.get(selectedType);
+			GroupCommand groupCommand = typeCommand1.getGroups().get(selectedGroup);
+
+			// Building group type list
+			groupCommand.getCommandNames().forEach((groupName, commandList) -> {
+				comboName.getItems().add(groupName);
+			});
+
+			comboName.setDisable(false);
+
+			break;
+		case "comboName":
+
+			commandDescriptionTextBox.setText("");
+			commandUnitTextBox.setText("None");
+			commandFormatTextBox.setText("None");
+
+			System.out.println("ClientWindow: handleComboBoxSelection: Selected command name: " + selectedItem);
+			selectedCommandName = selectedItem;
+
+			TypeCommand typeCommand2 = types.get(selectedType);
+			GroupCommand groupCommand1 = typeCommand2.getGroups().get(selectedGroup);
+			NameCommand nameCommand = groupCommand1.getCommandNames().get(selectedCommandName);
+
+			commandDescriptionTextBox.setText(nameCommand.getDescription());
+
+			if (nameCommand.getDataSendUnit().equals("None"))
+				commandUnitTextBox.setText(nameCommand.getDataReturnUnit() + " (Returning data)");
+			else if (nameCommand.getDataReturnUnit().equals("None"))
+				commandUnitTextBox.setText(nameCommand.getDataSendUnit() + " (Sending data)");
+			
+			if (nameCommand.getDataSendFormat().equals("None"))
+				commandFormatTextBox.setText(nameCommand.getReturnFormat() + " (Returning data)");
+			else if (nameCommand.getReturnFormat().equals("None"))
+				commandFormatTextBox.setText(nameCommand.getDataSendFormat() + " (Sending data)");
+			
+			break;
+
+		case "comboAxis":
+			System.out.println("ClientWindow: handleComboBoxSelection: Selected axis: " + selectedItem);
+			selectedAxis = selectedItem;
+			break;
+
+		default:
+			break;
 		}
 
 	}
